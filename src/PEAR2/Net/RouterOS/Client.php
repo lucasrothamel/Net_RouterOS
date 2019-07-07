@@ -246,10 +246,15 @@ class Client
             if ($com->getTransmitter()->isPersistent()) {
                 $old = $com->getTransmitter()->lock(S::DIRECTION_ALL);
                 $result = self::_login($com, $username, $password, $timeout);
+                if (!$result) 
+                    $result = self::_login_legacy($com, $username, $password, $timeout);
                 $com->getTransmitter()->lock($old, true);
                 return $result;
             }
-            return self::_login($com, $username, $password, $timeout);
+            $result = self::_login($com, $username, $password, $timeout);
+            if (!$result)
+                $result = self::_login_legacy($com, $username, $password, $timeout);
+            return $result; 
         } catch (E $e) {
             if ($com->getTransmitter()->isPersistent() && null !== $old) {
                 $com->getTransmitter()->lock($old, true);
@@ -286,16 +291,8 @@ class Client
         $timeout = null
     ) {
         $request = new Request('/login');
-        $request->send($com);
-        $response = new Response($com, false, $timeout);
         $request->setArgument('name', $username);
-        $request->setArgument(
-            'response',
-            '00' . md5(
-                chr(0) . $password
-                . pack('H*', $response->getProperty('ret'))
-            )
-        );
+        $request->setArgument('password',$password);
         $request->verify($com)->send($com);
 
         $response = new Response($com, false, $timeout);
@@ -311,6 +308,38 @@ class Client
         }
     }
 
+    private static function _login_legacy(
+        Communicator $com,
+        $username,
+        $password = '',
+        $timeout = null
+        ) {
+            $request = new Request('/login');
+            $request->send($com);
+            $response = new Response($com, false, $timeout);
+            $request->setArgument('name', $username);
+            $request->setArgument(
+                'response',
+                '00' . md5(
+                    chr(0) . $password
+                    . pack('H*', $response->getProperty('ret'))
+                    )
+                );
+            $request->verify($com)->send($com);
+            
+            $response = new Response($com, false, $timeout);
+            if ($response->getType() === Response::TYPE_FINAL) {
+                return null === $response->getProperty('ret');
+            } else {
+                while ($response->getType() !== Response::TYPE_FINAL
+                    && $response->getType() !== Response::TYPE_FATAL
+                    ) {
+                        $response = new Response($com, false, $timeout);
+                    }
+                    return false;
+            }
+    }
+    
     /**
      * Sets the charset(s) for this connection.
      *
