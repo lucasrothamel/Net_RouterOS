@@ -272,6 +272,8 @@ class Client
     /**
      * Login to a RouterOS connection.
      *
+     * It first tries the new RouterOS login method from version 6.45.1 - and if that fails, tries the legacy login method
+     *
      * This is the actual login procedure, applied regardless of persistence and
      * charset settings.
      *
@@ -308,6 +310,16 @@ class Client
         }
     }
 
+    /**
+     * legacy login method, used for RouterOS versions 6.45 and below.
+     *
+     * @param Communicator $com
+     * @param $username
+     * @param string $password
+     * @param null $timeout
+     * @return bool
+     * @throws E
+     */
     private static function _login_legacy(
         Communicator $com,
         $username,
