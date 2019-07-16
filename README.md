@@ -1,3 +1,13 @@
+## Fork
+
+This is a fork from the original, unmaintained library
+
+- adding compatibility for RouterOS 6.45.1 new login method
+
+## Original Readme
+
+
+
 Project: [![Total Downloads](https://poser.pugx.org/pear2/net_routeros/downloads)](https://packagist.org/packages/pear2/net_routeros) [![License](https://poser.pugx.org/pear2/net_routeros/license)](https://packagist.org/packages/pear2/net_routeros)
 
 Stable (master): [![Dependency Status](https://www.versioneye.com/php/pear2:net_routeros/dev-master/badge.svg)](https://www.versioneye.com/php/pear2:net_routeros/dev-master)
